@@ -87,7 +87,7 @@ if __name__ == '__main__':
 
             try:
                 user_request = get_user_request(config, (end_date, start_date), source)
-                # metrica_logs_api.integrate_with_logs_api(config, user_request)
+                metrica_logs_api.integrate_with_logs_api(config, user_request)
             except Exception as e:
                 write_to_file('Exception: ' + str(e))
             else:
