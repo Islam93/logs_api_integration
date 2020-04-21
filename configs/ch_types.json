@@ -26,7 +26,7 @@
 	"ym:s:lastSocialNetwork": "String",
 	"ym:s:lastSocialNetworkProfile": "String",
 	"ym:s:referer": "String",
-	"ym:s:lastDirectClickOrder": "UInt32",
+	"ym:s:lastDirectClickOrder": "String",
 	"ym:s:lastDirectBannerGroup": "UInt32",
 	"ym:s:lastDirectClickBanner": "String",
 	"ym:s:lastDirectPhraseOrCond": "String",
@@ -132,7 +132,7 @@
 	"ym:s:offlineCallHoldDuration": "Array(UInt32)",
 	"ym:s:offlineCallMissed": "Array(UInt32)",
 	"ym:s:offlineCallTag": "Array(String)",
-	"ym:s:offlineCallFirstTimeCaller": "Array(UInt32)",
+	"ym:s:offlineCallFirstTimeCaller": "Array(Int32)",
 	"ym:s:offlineCallURL": "Array(String)",
 
 	"ym:pv:watchID": "UInt64",

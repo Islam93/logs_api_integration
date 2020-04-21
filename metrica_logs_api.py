@@ -107,6 +107,7 @@ def integrate_with_logs_api(config, user_request):
             if i == config['retries'] - 1:
                 raise e
 
+
 if __name__ == '__main__':
     print('##### python', utils.get_python_version())
     start_time = time.time()

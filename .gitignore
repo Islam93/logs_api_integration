@@ -1,0 +1,6 @@
+# python virtual env
+env/
+
+log/
+
+configs/config_example.json
