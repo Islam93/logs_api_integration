@@ -8,13 +8,14 @@ import datetime
 import logging
 
 
-def setup_logging(config):
+def setup_logging(config, stream=sys.stdout):
     global logger
     logger = logging.getLogger('logs_api')
-    logging.basicConfig(stream=sys.stdout,
+    logging.basicConfig(stream=stream,
                         level=config['log_level'],
                         format='%(asctime)s %(processName)s %(levelname)-8s %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S', )
+    return logger
 
 
 def get_date_period(options):

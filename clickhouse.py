@@ -178,3 +178,15 @@ def is_data_present(start_date_str, end_date_str, source):
     is_null = (visits == '') or (visits.strip() == '0')
     return not is_null
 
+
+def clear_for_period(start_date_str, end_date_str, source):
+    table_name = get_source_table_name(source)
+    query = '''
+        alter table {table}
+        delete
+        where Date >= '{start_date}' AND Date <= '{end_date}'
+    '''.format(table=table_name,
+               start_date=start_date_str,
+               end_date=end_date_str)
+
+    return get_clickhouse_data(query)

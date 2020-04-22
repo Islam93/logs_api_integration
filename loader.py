@@ -4,24 +4,18 @@ from datetime import datetime, timedelta
 from collections import namedtuple
 
 import utils
-import logs_api
 import metrica_logs_api
+import clickhouse
 
 
 def get_cli_options():
     parser = argparse.ArgumentParser()
     parser.add_argument('-date_from', help='Start of period')
     parser.add_argument('-date_to', help='End of period')
-    parser.add_argument('-source', nargs='*', help='Source (hits or/and visits)')
+    parser.add_argument('-source', help='Source (hits or visits)')
     parser.add_argument('-gap', type=int, default=1, help='Amount of days')
 
     return parser.parse_args()
-
-
-def write_to_file(text):
-    file_object = open('log/loader.txt', 'a')
-    file_object.write(text)
-    file_object.close()
 
 
 def get_user_request(config, date_period, source):
@@ -54,13 +48,17 @@ def get_user_request(config, date_period, source):
 if __name__ == '__main__':
     options = get_cli_options()
     config = utils.get_config()
-    metrica_logs_api.setup_logging(config)
 
     from_dt = datetime.strptime(options.date_from, '%Y-%m-%d')
     to_dt = datetime.strptime(options.date_to, '%Y-%m-%d')
     assert from_dt > to_dt, 'date_from must be less than date_to'
-    sources = options.source
+    source = options.source
     gap = options.gap
+
+    logger = metrica_logs_api.setup_logging(
+        config,
+        stream=open(f'log/loader_{source}.txt', 'a')
+    )
 
     load = True
     start_dt = from_dt
@@ -74,24 +72,26 @@ if __name__ == '__main__':
             end_dt = to_dt
             load = False
 
+        start_date = start_dt.strftime('%Y-%m-%d')
+        end_date = end_dt.strftime('%Y-%m-%d')
+
+        now = datetime.now().strftime('%d-%m-%Y %H:%M')
+        log = f"\n---------------------------    " \
+              f"{now} : {source}, {start_date} - {end_date}" \
+              f"    ---------------------------\n"
+        logger.info(log)
+
         success = False
-        for source in sources:
-            start_date = start_dt.strftime('%Y-%m-%d')
-            end_date = end_dt.strftime('%Y-%m-%d')
-
-            now = datetime.now().strftime('%d-%m-%Y %H:%M')
-            log = f"\n\n\n\n\n---------------------------    " \
-                  f"{now} : {source}, {start_date} - {end_date}" \
-                  f"    ---------------------------"
-            write_to_file(log)
-
-            try:
-                user_request = get_user_request(config, (end_date, start_date), source)
-                metrica_logs_api.integrate_with_logs_api(config, user_request)
-            except Exception as e:
-                write_to_file('Exception: ' + str(e))
-            else:
-                success = True
+        try:
+            user_request = get_user_request(config, (end_date, start_date), source)
+            metrica_logs_api.integrate_with_logs_api(config, user_request)
+        except Exception as e:
+            logger.info(f'Exception on loading {source} for range {end_date} - {start_date}')
+            logger.info(f'Clear data for {source} for range {end_date} - {start_date}')
+            clickhouse.clear_for_period(end_date, start_date, source)
+        else:
+            logger.info(f'Source {source} for range {end_date} - {start_date} SUCCESSFULLY loaded')
+            success = True
 
         if success:
             start_dt = end_dt - timedelta(days=1)
