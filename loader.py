@@ -14,6 +14,7 @@ def get_cli_options():
     parser.add_argument('-date_to', help='End of period')
     parser.add_argument('-source', help='Source (hits or visits)')
     parser.add_argument('-gap', type=int, default=1, help='Amount of days')
+    parser.add_argument('-sleep', type=int, default=30, help='Sleep time between requests in minutes')
 
     return parser.parse_args()
 
@@ -54,6 +55,7 @@ if __name__ == '__main__':
     assert from_dt > to_dt, 'date_from must be less than date_to'
     source = options.source
     gap = options.gap
+    sleep_min = options.sleep
 
     logger = metrica_logs_api.setup_logging(
         config,
@@ -76,9 +78,9 @@ if __name__ == '__main__':
         end_date = end_dt.strftime('%Y-%m-%d')
 
         now = datetime.now().strftime('%d-%m-%Y %H:%M')
-        log = f"\n---------------------------    " \
+        log = f"\n\n---------------------------    " \
               f"{now} : {source}, {start_date} - {end_date}" \
-              f"    ---------------------------\n"
+              f"    ---------------------------"
         logger.info(log)
 
         success = False
@@ -97,5 +99,6 @@ if __name__ == '__main__':
             start_dt = end_dt - timedelta(days=1)
             end_dt = start_dt - timedelta(days=(gap-1))
 
+        logger.info(f'Sleep before run for {source} for range {end_dt} - {start_dt}')
         # half an hour
-        time.sleep(60 * 30)
+        time.sleep(60 * sleep_min)
